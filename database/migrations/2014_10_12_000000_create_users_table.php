@@ -16,6 +16,7 @@ class CreateUsersTable extends Migration
         Schema::create('biodata', function (Blueprint $table) {
             $table->id('nik');
             $table->string('nama');
+            $table->enum('role', ['admin', 'pegawai']);
             $table->enum('jenis_kelamin', ['L','P']);
             $table->bigInteger('nip')->nullable()->default(18);
             $table->string('password');

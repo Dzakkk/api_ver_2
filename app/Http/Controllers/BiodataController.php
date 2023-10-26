@@ -19,30 +19,30 @@ class BiodataController extends Controller
         return biodataResource::collection($biodata);
     }
 
-    public function store1(Request $request)
-    {
-        $bio = new User;
+    // public function store1(Request $request)
+    // {
+    //     $bio = new User;
 
-        $bio->nik = $request->nik;
-        $bio->nama = $request->nama;
-        $bio->password = Hash::make($request->password);
-        $bio->jenis_kelamin = $request->jenis_kelamin;
-        $bio->tanggal_lahir = $request->tanggal_lahir;
-        $bio->tempat_lahir = $request->tempat_lahir;
-        $bio->nip = $request->nip;
-        $bio->kartu_pegawai = $request->kartu_pegawai;
-        $bio->status_perkawinan = $request->status_perkawinan;
-        $bio->TMT_KGB_terakhir = $request->TMT_KGB_terakhir;
-        $bio->kenaikan_KGB_YAD = $request->kenaikan_KGB_YAD;
-        $bio->TMT_pensiun = $request->TMT_pensiun;
-        $bio->kode_pendidikan = $request->kode_pendidikan;
-        $bio->kode_pangkat = $request->kode_pangkat;
+    //     $bio->nik = $request->nik;
+    //     $bio->nama = $request->nama;
+    //     $bio->password = Hash::make($request->password);
+    //     $bio->jenis_kelamin = $request->jenis_kelamin;
+    //     $bio->tanggal_lahir = $request->tanggal_lahir;
+    //     $bio->tempat_lahir = $request->tempat_lahir;
+    //     $bio->nip = $request->nip;
+    //     $bio->kartu_pegawai = $request->kartu_pegawai;
+    //     $bio->status_perkawinan = $request->status_perkawinan;
+    //     $bio->TMT_KGB_terakhir = $request->TMT_KGB_terakhir;
+    //     $bio->kenaikan_KGB_YAD = $request->kenaikan_KGB_YAD;
+    //     $bio->TMT_pensiun = $request->TMT_pensiun;
+    //     $bio->kode_pendidikan = $request->kode_pendidikan;
+    //     $bio->kode_pangkat = $request->kode_pangkat;
 
-        $bio->save();
-        return response()->json([
-            "massage" => "User added"
-        ], 201);
-    }
+    //     $bio->save();
+    //     return response()->json([
+    //         "massage" => "User added"
+    //     ], 201);
+    // }
 
     // public function store(Request $request)
     // {
@@ -103,6 +103,7 @@ class BiodataController extends Controller
         $validatedData = $request->validate([
             'nik' => 'required',
             'nama' => 'required',
+            'role' => 'required',
             'password' => 'required',
             'nip' => 'required',
             'tempat_lahir' => 'required',
@@ -127,6 +128,7 @@ class BiodataController extends Controller
         $user = User::create([
             'nik' => $validatedData['nik'],
             'nama' => $validatedData['nama'],
+            'role' => $validatedData['role'],
             'password' => bcrypt($validatedData['password']),
             'nip' => $validatedData['nip'],
             'tempat_lahir' => $validatedData['tempat_lahir'],
@@ -250,29 +252,32 @@ class BiodataController extends Controller
         }
     }
 
-
-
     public function destroy($id)
     {
         // Find the user by 'nik'
         $user = User::where('nik', $id)->first();
-    
+
         if (!$user) {
             return response()->json([
                 "message" => "User not found"
             ], 404);
         }
-    
+
         // Delete the associated pendidikan and pangkat records
         $user->didik->delete();
         $user->jabatan->delete();
-    
+
         // Finally, delete the user record
         $user->delete();
-    
+
         return response()->json([
             "message" => "User and related data deleted"
         ], 202);
     }
-    
+
+    public function searchByName($nama)
+    {
+        $results = User::where('nama', 'like', '%' . $nama . '%')->get();
+        return biodataDetailResource::collection($results);
+    }
 }

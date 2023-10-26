@@ -2,33 +2,31 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 
 class LoginController extends Controller
 {
     public function login(Request $request)
     {
-        $request->validate([
-            'nik' => 'required',
-            'password' => 'required',
-        ]);
+        $credentials = $request->only('nik', 'password');
 
-        $user = User::where('nik', $request->nik)->first();
+        if (Auth::attempt($credentials)) {
+            $user = Auth::user();
+            $token = $user->createToken('MyApp')->accessToken;
 
-        if (!$user || !Hash::check($request->password, $user->password)) {
-            return response()->json(['message' => 'Invalid credentials'], 401);
+            return response()->json([
+                'user' => $user,
+                'access_token' => $token,
+            ], 200);
+        } else {
+            return response()->json(['error' => 'Unauthorized'], 401);
         }
-
-        $token = $user->createToken('user_login')->plainTextToken;
-
-        return response()->json(['token' => $token], 200);
     }
 
     public function logout(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
+        $request->user()->token()->revoke();
 
         return response()->json(['message' => 'Logged out successfully'], 200);
     }
